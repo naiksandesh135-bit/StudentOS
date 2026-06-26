@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../contexts/AuthContext";
 import {
@@ -9,7 +9,7 @@ import {
 
 // ── Animated counter hook ────────────────────────────────────────────────────
 function useCounter(target, duration = 2000) {
-  const [count, setCount] = React.useState(0);
+  const [count, setCount] = useState(0);
   const started = useRef(false);
   const ref = useRef(null);
 
@@ -69,7 +69,7 @@ function FeatureCard({ icon: Icon, title, desc, color, delay }) {
 
 // ── Navbar ────────────────────────────────────────────────────────────────────
 function Navbar({ onLogin }) {
-  const [scrolled, setScrolled] = React.useState(false);
+  const [scrolled, setScrolled] = useState(false);
   useEffect(() => {
     const handler = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", handler);
@@ -82,13 +82,13 @@ function Navbar({ onLogin }) {
     }`}>
       <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center gap-3">
-          <div className="w-9 h-9 rounded-xl bg-brand-purple flex items-center justify-center shadow-[0_0_15px_rgba(124,58,237,0.5)]">
-            <GraduationCap className="w-5 h-5 text-white" />
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-xl bg-brand-purple flex items-center justify-center shadow-[0_0_15px_rgba(124,58,237,0.5)] shrink-0">
+            <GraduationCap className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
           </div>
           <div>
-            <span className="text-base font-bold text-white tracking-tight">StudentOS</span>
-            <p className="text-[10px] text-slate-400 leading-none">Student Operating System</p>
+            <span className="text-sm sm:text-base font-bold text-white tracking-tight">StudentOS</span>
+            <p className="text-[9px] sm:text-[10px] text-slate-400 leading-none">Student Operating System</p>
           </div>
         </div>
 
@@ -107,16 +107,16 @@ function Navbar({ onLogin }) {
         </div>
 
         {/* CTA Buttons */}
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 sm:gap-3">
           <button
             onClick={onLogin}
-            className="px-5 py-2 rounded-xl text-sm font-medium text-slate-300 border border-white/10 hover:border-white/20 hover:text-white hover:bg-white/5 transition-all duration-200"
+            className="px-3 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-medium text-slate-300 border border-white/10 hover:border-white/20 hover:text-white hover:bg-white/5 transition-all duration-200"
           >
             Login
           </button>
           <button
             onClick={onLogin}
-            className="px-5 py-2 rounded-xl text-sm font-bold text-white bg-brand-purple hover:bg-brand-purple/90 shadow-[0_4px_20px_rgba(124,58,237,0.4)] hover:shadow-[0_4px_25px_rgba(124,58,237,0.6)] transition-all duration-200"
+            className="px-3 sm:px-5 py-2 rounded-xl text-xs sm:text-sm font-bold text-white bg-brand-purple hover:bg-brand-purple/90 shadow-[0_4px_20px_rgba(124,58,237,0.4)] hover:shadow-[0_4px_25px_rgba(124,58,237,0.6)] transition-all duration-200"
           >
             Get Started
           </button>
@@ -288,11 +288,11 @@ export default function Landing() {
             </p>
 
             {/* CTA Buttons */}
-            <div className="flex flex-wrap items-center gap-4 mb-10">
+            <div className="flex flex-wrap items-center gap-3 sm:gap-4 mb-10">
               <button
                 onClick={handleLogin}
                 id="get-started-hero"
-                className="flex items-center gap-2 px-7 py-3.5 rounded-xl font-bold text-white bg-brand-purple hover:bg-brand-purple/90 shadow-[0_4px_30px_rgba(124,58,237,0.5)] hover:shadow-[0_4px_40px_rgba(124,58,237,0.7)] transition-all duration-200 text-sm"
+                className="flex items-center gap-2 px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl font-bold text-white bg-brand-purple hover:bg-brand-purple/90 shadow-[0_4px_30px_rgba(124,58,237,0.5)] hover:shadow-[0_4px_40px_rgba(124,58,237,0.7)] transition-all duration-200 text-sm"
               >
                 <Zap className="w-4 h-4" />
                 Get Started Free
@@ -300,10 +300,18 @@ export default function Landing() {
               </button>
               <a
                 href="#features"
-                className="flex items-center gap-2 px-7 py-3.5 rounded-xl font-medium text-slate-300 border border-white/10 hover:border-white/20 hover:text-white hover:bg-white/5 transition-all duration-200 text-sm"
+                className="flex items-center gap-2 px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl font-medium text-slate-300 border border-white/10 hover:border-white/20 hover:text-white hover:bg-white/5 transition-all duration-200 text-sm"
               >
                 <Play className="w-4 h-4" />
                 Watch Demo
+              </a>
+              <a
+                href="https://digitalheroesco.com"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl font-bold text-white bg-brand-blue hover:bg-brand-blue/90 shadow-[0_4px_20px_rgba(59,130,246,0.3)] hover:shadow-[0_4px_30px_rgba(59,130,246,0.5)] transition-all duration-200 text-sm"
+              >
+                Built for Digital Heroes
               </a>
             </div>
 
@@ -461,6 +469,26 @@ export default function Landing() {
             <ChevronRight className="w-5 h-5" />
           </button>
           <p className="text-xs text-slate-600 mt-4">No credit card required · Free forever</p>
+        </div>
+      </section>
+
+      {/* ── Contact Section ───────────────────────────────────────────── */}
+      <section className="py-12 border-t border-white/5 bg-white/1">
+        <div className="max-w-3xl mx-auto px-6 text-center">
+          <h3 className="text-lg font-bold text-white mb-2">Developer Contact Info</h3>
+          <p className="text-sm text-slate-400 mb-4">Have questions or feedback? Feel free to reach out.</p>
+          <div className="inline-flex flex-col sm:flex-row items-center gap-2 sm:gap-6 px-6 py-4 rounded-2xl bg-white/2 border border-white/5">
+            <p className="text-sm text-slate-300">
+              <span className="font-semibold text-white">Name:</span> SANDESH DAMODAR NAIK
+            </p>
+            <span className="hidden sm:inline text-slate-600">|</span>
+            <p className="text-sm text-slate-300">
+              <span className="font-semibold text-white">Email:</span>{" "}
+              <a href="mailto:naiksandesh135@gmail.com" className="text-brand-purple hover:underline">
+                naiksandesh135@gmail.com
+              </a>
+            </p>
+          </div>
         </div>
       </section>
 

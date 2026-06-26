@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useTheme } from "../../hooks/useTheme";
-import { Moon, Sun, Bell, Search, ChevronDown, LogOut, Settings, Mail, X, Calendar, Briefcase, FolderKanban } from "lucide-react";
+import { Moon, Sun, Bell, Search, ChevronDown, LogOut, Settings, Mail, X, Calendar, Menu } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../../lib/supabase";
@@ -24,7 +24,7 @@ function getDaysUntil(dateStr) {
   return Math.ceil((target - today) / (1000 * 60 * 60 * 24));
 }
 
-export default function TopNav() {
+export default function TopNav({ onMenuClick }) {
   const { theme, toggleTheme } = useTheme();
   const { user, profile, signOut } = useAuth();
   const navigate = useNavigate();
@@ -70,7 +70,11 @@ export default function TopNav() {
   // ── Search logic (debounced) ────────────────────────────────────────────────
   useEffect(() => {
     if (!user || searchQuery.trim().length < 2) {
-      setSearchResults({ opps: [], projs: [] });
+      const resetSearch = async () => {
+        await Promise.resolve();
+        setSearchResults({ opps: [], projs: [] });
+      };
+      resetSearch();
       return;
     }
     const delayDebounceFn = setTimeout(async () => {
@@ -170,10 +174,19 @@ export default function TopNav() {
   }
 
   return (
-    <header className="flex items-center justify-between px-8 py-5 relative">
+    <header className="flex items-center justify-between px-4 md:px-8 py-4 md:py-5 relative border-b border-border-subtle/50 lg:border-b-0 shrink-0">
+
+      {/* Mobile Menu Toggle */}
+      <button
+        onClick={onMenuClick}
+        className="lg:hidden p-2 rounded-xl text-slate-400 hover:text-white hover:bg-bg-surface mr-2 shrink-0 transition-colors"
+        title="Open menu"
+      >
+        <Menu className="w-6 h-6" />
+      </button>
 
       {/* Search Bar */}
-      <div ref={searchContainerRef} className="relative flex-1 max-w-xl">
+      <div ref={searchContainerRef} className="relative flex-1 max-w-xl min-w-0">
         <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
         <input
           ref={searchInputRef}
@@ -184,7 +197,7 @@ export default function TopNav() {
           placeholder="Search opportunities, projects..."
           className="w-full pl-12 pr-12 py-3 rounded-xl bg-bg-surface border border-transparent text-sm text-slate-200 placeholder-slate-400 focus:outline-none focus:border-border-subtle focus:bg-bg-surface-hover transition-all duration-200"
         />
-        <div className="absolute right-4 top-1/2 -translate-y-1/2 flex items-center justify-center px-1.5 py-1 rounded text-[10px] font-bold text-slate-400 bg-bg-base border border-border-subtle pointer-events-none">
+        <div className="absolute right-4 top-1/2 -translate-y-1/2 hidden md:flex items-center justify-center px-1.5 py-1 rounded text-[10px] font-bold text-slate-400 bg-bg-base border border-border-subtle pointer-events-none">
           ⌘K
         </div>
 
@@ -251,10 +264,10 @@ export default function TopNav() {
           </button>
 
           {notifOpen && (
-            <div className="absolute right-0 top-12 w-80 bg-bg-surface border border-border-subtle rounded-2xl shadow-2xl z-50 overflow-hidden">
+            <div className="absolute right-0 top-12 w-[280px] sm:w-80 bg-bg-surface border border-border-subtle rounded-2xl shadow-2xl z-50 overflow-hidden">
               {/* Header */}
               <div className="flex items-center justify-between px-4 py-3 border-b border-border-subtle">
-                <h3 className="text-sm font-semibold text-slate-200">
+                <h3 className="text-xs sm:text-sm font-semibold text-slate-200">
                   Upcoming Deadlines
                   {unreadCount > 0 && (
                     <span className="ml-2 text-[10px] bg-brand-pink/20 text-brand-pink px-1.5 py-0.5 rounded-full font-medium">

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import { useState, useEffect } from "react";
 import { Calendar as CalendarIcon, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
@@ -12,43 +12,43 @@ export default function Calendar() {
   const daysOfWeek = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 
   useEffect(() => {
-    if (user) fetchEvents();
-  }, [user]);
+    if (!user) return;
+    async function fetchEvents() {
+      try {
+        setLoading(true);
+        // Fetch opportunities with deadlines
+        const { data: opps, error: oppsError } = await supabase
+          .from("opportunities")
+          .select("id, title, deadline, type")
+          .eq("user_id", user?.id)
+          .not("deadline", "is", null);
+        
+        if (oppsError) throw oppsError;
 
-  async function fetchEvents() {
-    try {
-      setLoading(true);
-      // Fetch opportunities with deadlines
-      const { data: opps, error: oppsError } = await supabase
-        .from("opportunities")
-        .select("id, title, deadline, type")
-        .eq("user_id", user?.id)
-        .not("deadline", "is", null);
-      
-      if (oppsError) throw oppsError;
+        // Fetch projects with deadlines
+        const { data: projs, error: projsError } = await supabase
+          .from("projects")
+          .select("id, title, deadline")
+          .eq("user_id", user?.id)
+          .not("deadline", "is", null);
 
-      // Fetch projects with deadlines
-      const { data: projs, error: projsError } = await supabase
-        .from("projects")
-        .select("id, title, deadline")
-        .eq("user_id", user?.id)
-        .not("deadline", "is", null);
+        if (projsError) throw projsError;
 
-      if (projsError) throw projsError;
+        // Combine and format
+        const combined = [
+          ...(opps || []).map(o => ({ ...o, source: "opportunity" })),
+          ...(projs || []).map(p => ({ ...p, source: "project", type: "Project" }))
+        ];
 
-      // Combine and format
-      const combined = [
-        ...(opps || []).map(o => ({ ...o, source: "opportunity" })),
-        ...(projs || []).map(p => ({ ...p, source: "project", type: "Project" }))
-      ];
-
-      setEvents(combined);
-    } catch (error) {
-      console.error("Error fetching calendar events:", error.message);
-    } finally {
-      setLoading(false);
+        setEvents(combined);
+      } catch (error) {
+        console.error("Error fetching calendar events:", error.message);
+      } finally {
+        setLoading(false);
+      }
     }
-  }
+    fetchEvents();
+  }, [user]);
 
   // Calendar Logic
   const getDaysInMonth = (year, month) => new Date(year, month + 1, 0).getDate();
@@ -164,21 +164,21 @@ export default function Calendar() {
                 const dayEvents = getEventsForDay(day);
 
                 return (
-                  <div key={idx} className="min-h-[120px] p-2 border-r border-b border-border-subtle last:border-r-0 hover:bg-bg-surface-hover/30 transition-colors flex flex-col">
+                  <div key={idx} className="min-h-[70px] sm:min-h-[120px] p-1 sm:p-2 border-r border-b border-border-subtle last:border-r-0 hover:bg-bg-surface-hover/30 transition-colors flex flex-col">
                     {day ? (
                       <>
-                        <div className={`w-7 h-7 flex items-center justify-center rounded-full text-sm font-medium mb-1.5 ${
+                        <div className={`w-5 h-5 sm:w-7 sm:h-7 flex items-center justify-center rounded-full text-xs sm:text-sm font-medium mb-1 ${
                           isToday ? "bg-brand-pink text-white shadow-lg shadow-brand-pink/30" : "text-slate-300"
                         }`}>
                           {day}
                         </div>
 
                         {/* Events list for this day */}
-                        <div className="flex-1 overflow-y-auto space-y-1 custom-scrollbar pr-1">
+                        <div className="flex-1 overflow-y-auto space-y-1 custom-scrollbar pr-0.5">
                           {dayEvents.map(evt => (
                             <div 
                               key={evt.source + evt.id} 
-                              className={`px-1.5 py-1 text-[10px] font-medium rounded border truncate cursor-pointer ${getEventColor(evt.type)} hover:brightness-125 transition-all`}
+                              className={`px-1 py-0.5 sm:px-1.5 sm:py-1 text-[8px] sm:text-[10px] font-medium rounded border truncate cursor-pointer ${getEventColor(evt.type)} hover:brightness-125 transition-all`}
                               title={`${evt.title} (${evt.type})`}
                             >
                               {evt.title}

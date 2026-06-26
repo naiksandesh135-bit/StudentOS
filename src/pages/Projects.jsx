@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { FolderKanban, Plus, Clock, CheckSquare, MoreHorizontal, X, Loader2 } from "lucide-react";
+import { useState, useEffect } from "react";
+import { FolderKanban, Plus, Clock, CheckSquare, X, Loader2, Trash2 } from "lucide-react";
 import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "../contexts/AuthContext";
@@ -15,24 +15,38 @@ export default function Projects() {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
-    if (user) fetchProjects();
+    if (!user) return;
+    async function fetchProjects() {
+      try {
+        setLoading(true);
+        const { data, error } = await supabase
+          .from('projects')
+          .select('*')
+          .eq('user_id', user?.id)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        setProjects(data || []);
+      } catch (error) {
+        console.error("Error fetching projects:", error.message);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchProjects();
   }, [user]);
 
-  async function fetchProjects() {
+  async function handleDeleteProject(id) {
+    if (!window.confirm("Are you sure you want to delete this project? This action cannot be undone.")) return;
     try {
-      setLoading(true);
-      const { data, error } = await supabase
-        .from('projects')
-        .select('*')
-        .eq('user_id', user?.id)
-        .order('created_at', { ascending: false });
-
+      // First, delete associated tasks to prevent foreign key issues
+      await supabase.from("tasks").delete().eq("project_id", id);
+      // Then, delete the project
+      const { error } = await supabase.from("projects").delete().eq("id", id);
       if (error) throw error;
-      setProjects(data || []);
+      setProjects(prev => prev.filter(p => p.id !== id));
     } catch (error) {
-      console.error("Error fetching projects:", error.message);
-    } finally {
-      setLoading(false);
+      console.error("Error deleting project:", error.message);
     }
   }
 
@@ -111,13 +125,25 @@ export default function Projects() {
         /* Projects Grid */
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6">
           {projects.map((project) => (
-            <Link key={project.id} to={`/projects/${project.id}`} className="glass-panel p-6 flex flex-col group hover:border-slate-600 transition-colors cursor-pointer">
+            <Link key={project.id} to={`/projects/${project.id}`} className="glass-panel p-6 flex flex-col group hover:border-slate-600 transition-colors cursor-pointer relative">
               <div className="flex justify-between items-start mb-4">
-                <span className={`text-[11px] font-medium px-2.5 py-1 rounded border text-brand-blue bg-brand-blue/10 border-brand-blue/20`}>
-                  {project.status || 'Active'}
+                <span className={`text-[11px] font-medium px-2.5 py-1 rounded border ${
+                  project.progress === 100
+                    ? "text-emerald-400 bg-emerald-500/10 border-emerald-500/20"
+                    : "text-brand-blue bg-brand-blue/10 border-brand-blue/20"
+                }`}>
+                  {project.progress === 100 ? "Completed ✅" : (project.status || 'Active')}
                 </span>
-                <button className="text-slate-400 hover:text-white transition-colors" onClick={(e) => e.preventDefault()}>
-                  <MoreHorizontal className="w-5 h-5" />
+                <button 
+                  className="text-slate-400 hover:text-red-400 transition-colors p-1.5 rounded-lg hover:bg-red-500/10 shrink-0" 
+                  onClick={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    await handleDeleteProject(project.id);
+                  }}
+                  title="Delete Project"
+                >
+                  <Trash2 className="w-4 h-4" />
                 </button>
               </div>
               
@@ -127,11 +153,13 @@ export default function Projects() {
               </p>
 
               <div className="space-y-4">
-                <div className="flex items-center justify-between text-sm text-slate-400">
-                  <div className="flex items-center gap-1.5">
-                    <CheckSquare className="w-4 h-4" />
-                    <span>Tasks</span>
-                  </div>
+                <div className={`flex items-center text-sm text-slate-400 ${project.progress < 100 ? "justify-between" : ""}`}>
+                  {project.progress < 100 && (
+                    <div className="flex items-center gap-1.5">
+                      <CheckSquare className="w-4 h-4" />
+                      <span>Tasks</span>
+                    </div>
+                  )}
                   <div className="flex items-center gap-1.5">
                     <Clock className="w-4 h-4" />
                     <span>{project.deadline || "No deadline"}</span>
